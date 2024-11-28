@@ -15,7 +15,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ["user_name", "email", "full_name", "phone_nember"]
+        fields = ["user_name", "email", "full_name", "phone_number"]
     
     def clean_password2(self):
         # Check that the two password entries match
@@ -25,4 +25,30 @@ class UserCreationForm(forms.ModelForm):
         
         return cd["password2"]
     
-    
+    def save(self, commit=True):
+        # Save the provided password in hashed format
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data["password1"])
+        if commit:
+            user.save()
+        return user
+
+
+class UserChangeForm(forms.ModelForm):
+    """A form for updating users. Includes all the fields on
+    the user, but replaces the password field with admin's
+    disabled password hash display field.
+    """
+
+    password = ReadOnlyPasswordHashField()
+
+    class Meta:
+        model = User
+        fields = [
+            "user_name",
+            "email",
+            "full_name",
+            "phone_number",
+            "is_active",
+            "is_admin"
+        ]
